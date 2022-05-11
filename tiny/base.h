@@ -1,0 +1,5 @@
+
+
+#define crypto_aead_encrypt_tiny_asm encrypt_tiny_asm
+#define crypto_aead_encrypt_tiny_asm_new_api encrypt_tiny_asm_new_api
+#define crypto_aead_encrypt_tiny encrypt_tiny
