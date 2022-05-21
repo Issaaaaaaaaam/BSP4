@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "crypto_aead.h"
-#include "schwaemm.h"
-#include "sparkle.h"
+#include <Sparkle_new/base.h>
 #include "nuclei_sdk_soc.h"
 
 
@@ -14,23 +13,7 @@ typedef unsigned long long ULLInt;
 #define MAX_AD_LEN  256
 #define MAX_MSG_LEN 256
 
-
-#if (defined(__arm__) || defined(_M_ARM)) && defined(SPARKLE_ASSEMBLER)
-extern void sparkle256_arm(uint32_t *state, int steps);
-extern void sparkle384_arm(uint32_t *state, int steps);
-extern void sparkle512_arm(uint32_t *state, int steps);
-extern void sparkle256f_arm(uint32_t *state, int steps);
-extern void sparkle384f_arm(uint32_t *state, int steps);
-extern void sparkle512f_arm(uint32_t *state, int steps);
-#endif  // if defined(__arm__) || ...
-
-#if defined(__riscv_xlen) && (__riscv_xlen == 32) && defined(SPARKLE_ASSEMBLER)
 extern void sparkle384_rv32(uint32_t *state, int steps);
-#endif
-
-#if (defined(__AVR) || defined(__AVR__)) && defined(SPARKLE_ASSEMBLER)
-extern void sparkle_avr(uint32_t *state, int brans, int steps);
-#endif  // if defined(__AVR__) || ...
 
 
 static void init_buffer(UChar *buffer, size_t len)
