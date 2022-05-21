@@ -2,7 +2,7 @@ TARGET = main
 
 NUCLEI_SDK_ROOT = ../../..
 
-SRCDIRS = . src xoodyak xoodyak/asm sparkle Ascon-128 Ascon-128/crypto_aead Ascon-128/Permutation Ascon-128/crypto_aead/ref_asm tiny
+SRCDIRS = . src xoodyak xoodyak/asm sparkle Ascon-128 Ascon-128/crypto_aead Ascon-128/Permutation Ascon-128/crypto_aead/ref_asm tiny Sparkle_new
 
 INCDIRS = . inc
 

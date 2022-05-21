@@ -60,9 +60,11 @@ extern void crypto_aead_encrypt_xoodyak();
 extern void perm_xoodyak_asm(); 
 extern int github_ascon128_encrypt_asm(); 
 extern int github_ascon128_encrypt_asm_new_api();
+extern void tiny_permutation_asm(); 
 
 extern void crypto_aead_encrypt_tiny_asm(); 
 extern void crypto_aead_encrypt_tiny(); 
+extern void tiny_permutation_C(); 
 
 
 static void init_buffer(UChar *buffer, size_t len){
@@ -121,7 +123,7 @@ void test_xoodyak_asm(void){
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 }   
 
-void test_xoodyak_func_asm(int steps) // focus on this measure cycles. 
+void test_xoodyak_perm_asm(int steps) // focus on this measure cycles. 
 {
     uint32_t state[12];
     uint32_t num_cycle = __get_rv_cycle();
@@ -219,7 +221,7 @@ void test_ascon128_asm(void){
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 }   
 
-void test_ascon128_func_asm(void){  
+void test_ascon128_perm_asm(void){  
     UChar npub[CRYPTO_NPUBBYTES], k[CRYPTO_KEYBYTES];
     init_buffer(npub, CRYPTO_NPUBBYTES);
     init_buffer(k, CRYPTO_KEYBYTES);
@@ -373,3 +375,26 @@ void test_ascon128_asm_new_api(void){
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 }   
+
+
+void tiny_perm_asm() // focus on this measure cycles. 
+{
+    UChar k[CRYPTO_KEYBYTES];
+    init_buffer(k, CRYPTO_KEYBYTES);
+    unsigned int state[4];
+    uint32_t num_cycle = __get_rv_cycle();
+    tiny_permutation_asm(state, k, 640);
+    uint32_t num_cycle1 = __get_rv_cycle();
+    printf("\n Tiny permutation (riscv) with 640 steps has %d cycles \n", num_cycle1 - num_cycle);
+}
+
+void tiny_perm_C() // focus on this measure cycles. 
+{
+    UChar k[CRYPTO_KEYBYTES];
+    init_buffer(k, CRYPTO_KEYBYTES);
+    unsigned int state[4];
+    uint32_t num_cycle = __get_rv_cycle();
+    tiny_permutation_C(state, k, 640);
+    uint32_t num_cycle1 = __get_rv_cycle();
+    printf("\n Tiny permutation (riscv) with 640 steps has %d cycles \n", num_cycle1 - num_cycle);
+}
