@@ -8,7 +8,7 @@ extern void test_sparkle384(int steps);
 extern void test_sparkle512(int steps);
 extern void test_schwaemm(void);
 extern void test_xoodyak_asm(void); 
-extern void test_xoodyak_perm_asm(int steps);
+extern void test_xoodyak_perm_asm(void);
 extern void test_sparkle384_github(int steps); 
 extern void test_schwaemm_github(void);
 extern void test_ascon128_asm(void); 
@@ -25,7 +25,7 @@ int main(void){
   //printf("-------------------------------------------\n\n");
   //test_sparkle384(7);
   //printf("-------------------------------------------\n\n");
-  //test_xoodyak_perm_asm(12);
+  //test_xoodyak_perm_asm();
   //printf("-------------------------------------------\n\n");
   //test_xoodyak_asm();
   //printf("-------------------------------------------\n\n");

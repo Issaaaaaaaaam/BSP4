@@ -145,3 +145,62 @@ int encrypt_tiny(
 }
 
 
+//decrypt a message
+int decrypt_tiny(
+	unsigned char *m, unsigned long long *mlen,
+	unsigned char *nsec,
+	const unsigned char *c, unsigned long long clen,
+	const unsigned char *ad, unsigned long long adlen,
+	const unsigned char *npub,
+	const unsigned char *k
+)
+{
+        unsigned long long i;
+        unsigned int j, check = 0;
+        unsigned char mac[8];
+        unsigned int state[4];
+
+        *mlen = clen - 8;
+
+        //initialization stage
+        initialization_c(k, npub, state);
+
+        //process the associated data   
+        process_ad_c(k, ad, adlen, state);
+
+        //process the ciphertext    
+        for (i = 0; i < (*mlen >> 2); i++)
+        {
+                state[1] ^= FrameBitsPC;
+                state_update(state, k, NROUND2);
+                ((unsigned int*)m)[i] = state[2] ^ ((unsigned int*)c)[i];
+                state[3] ^= ((unsigned int*)m)[i];
+        }
+        // if mlen is not a multiple of 4, we process the remaining bytes
+        if ((*mlen & 3) > 0)
+        {
+                state[1] ^= FrameBitsPC;
+                state_update(state, k, NROUND2);
+                for (j = 0; j < (*mlen & 3); j++)
+                {
+                        m[(i << 2) + j] = c[(i << 2) + j] ^ ((unsigned char*)state)[8 + j];
+                        ((unsigned char*)state)[12 + j] ^= m[(i << 2) + j];
+                }
+                state[1] ^= *mlen & 3;
+        }
+
+        //finalization stage, we assume that the tag length is 8 bytes
+        state[1] ^= FrameBitsFinalization;
+        state_update(state, k, NROUND2);
+        ((unsigned int*)mac)[0] = state[2];
+
+        state[1] ^= FrameBitsFinalization;
+        state_update(state, k, NROUND1);
+        ((unsigned int*)mac)[1] = state[2];
+
+        //verification of the authentication tag   
+        for (j = 0; j < 8; j++) { check |= (mac[j] ^ c[clen - 8 + j]); }
+        if (check == 0) return 0;
+        else return -1;
+}
+

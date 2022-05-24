@@ -81,9 +81,8 @@ void static ProcessPlaintext(unsigned int *state, const unsigned char *k, const 
     }
 }
 
-void static Finalize(unsigned int *state, unsigned char *mac, unsigned long long *clen, const unsigned char *k, unsigned char *c, unsigned long long mlen)
-{
-    unsigned int j;    
+void static Finalize(unsigned int *state, unsigned char *mac, const unsigned char *k)
+{  
     state[1] ^= FrameBitsFinalization;
     tiny_rv32(state, k, NROUND2);
     ((unsigned int*)mac)[0] = state[2];
@@ -91,9 +90,45 @@ void static Finalize(unsigned int *state, unsigned char *mac, unsigned long long
     state[1] ^= FrameBitsFinalization;
     tiny_rv32(state, k, NROUND1);
     ((unsigned int*)mac)[1] = state[2];
+}
 
+void static GenerateTag(unsigned long long *clen,unsigned long long mlen,unsigned char *mac, unsigned char *c){
+        unsigned int j;  
     *clen = mlen + 8;
     for (j = 0; j < 8; j++) c[mlen+j] = mac[j]; 
+}
+
+
+void static ProcessCyphertext(unsigned int *state, const unsigned char *k, unsigned char *m, const unsigned char *c, unsigned long long *mlen ){
+    //process the ciphertext    
+    unsigned int i; 
+    unsigned int j;
+    for (i = 0; i < (*mlen >> 2); i++)
+    {
+            state[1] ^= FrameBitsPC;
+            tiny_rv32(state, k, NROUND2);
+            ((unsigned int*)m)[i] = state[2] ^ ((unsigned int*)c)[i];
+            state[3] ^= ((unsigned int*)m)[i];
+    }
+    // if mlen is not a multiple of 4, we process the remaining bytes
+    if ((*mlen & 3) > 0)
+    {
+            state[1] ^= FrameBitsPC;
+            tiny_rv32(state, k, NROUND2);
+            for (j = 0; j < (*mlen & 3); j++)
+            {
+                    m[(i << 2) + j] = c[(i << 2) + j] ^ ((unsigned char*)state)[8 + j];
+                    ((unsigned char*)state)[12 + j] ^= m[(i << 2) + j];
+            }
+            state[1] ^= *mlen & 3;
+    }
+}
+
+int static VerifyTag(unsigned long long clen,unsigned char *mac, const unsigned char *c, unsigned int check){
+    unsigned int j;
+    for (j = 0; j < 8; j++) { check |= (mac[j] ^ c[clen - 8 + j]); }
+    if (check == 0) return 0;
+    else return -1;
 }
 
 
@@ -120,7 +155,41 @@ int encrypt_tiny_asm_new_api(
     ProcessPlaintext(state, k, m, c, mlen);
 
     //finalization stage, we assume that the tag length is 8 bytes
-    Finalize(state, mac, clen, k, c, mlen);
+    Finalize(state, mac, k);
 
+    //Generating the tag
+    GenerateTag(clen, mlen, mac, c);
     return 0;
+}
+
+int decrypt_tiny_asm_new_api(
+	unsigned char *m, unsigned long long *mlen,
+	unsigned char *nsec,
+	const unsigned char *c, unsigned long long clen,
+	const unsigned char *ad, unsigned long long adlen,
+	const unsigned char *npub,
+	const unsigned char *k
+    )
+{
+        unsigned long long i;
+        unsigned int j, check = 0;
+        unsigned char mac[8];
+        unsigned int state[4];
+
+        *mlen = clen - 8;
+
+    //initialization stage
+    initialization(k, npub, state);
+
+    //process the associated data   
+    process_ad(k, ad, adlen, state);
+
+    //process the plaintext    
+    ProcessCyphertext(state, k, m, c, mlen);
+
+    //finalization stage, we assume that the tag length is 8 bytes
+    Finalize(state, mac, k);
+
+    //Generating the tag
+    return VerifyTag(clen, mac, c, check);
 }

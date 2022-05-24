@@ -123,14 +123,13 @@ void test_xoodyak_asm(void){
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 }   
 
-void test_xoodyak_perm_asm(int steps) // focus on this measure cycles. 
+void test_xoodyak_perm_asm(void) // focus on this measure cycles. 
 {
     uint32_t state[12];
     uint32_t num_cycle = __get_rv_cycle();
-    perm_xoodyak_asm(state, steps);
+    perm_xoodyak_asm(state, 12);
     uint32_t num_cycle1 = __get_rv_cycle();
-    printf("\n Xoodyak function (riscv) with %i steps has %d cycles \n", steps, num_cycle1 - num_cycle);
-
+    printf("\n Xoodyak function (riscv) with 12 steps has %d cycles \n", num_cycle1 - num_cycle);
 }
 
 void test_schwaemm_github(void)
