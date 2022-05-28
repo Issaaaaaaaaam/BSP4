@@ -26,9 +26,8 @@ typedef unsigned long long ULLInt;
 #define KAT_DATA_ERROR -3
 #define KAT_CRYPTO_FAILURE -4
 
-#define MAX_MESSAGE_LENGTH_AEAD 128
-#define MAX_ASSOCIATED_DATA_LENGTH 128
-
+#define MAX_MESSAGE_LENGTH_AEAD 256
+#define MAX_ASSOCIATED_DATA_LENGTH 256
 
 
 #define CRYPTO_KEYBYTES 16
@@ -54,7 +53,8 @@ typedef unsigned long long ULLInt;
 #define TINY_CRYPTO_ABYTES 8
 #define TINY_CRYPTO_NOOVERLAP 1
 
-
+/////////////////////////////////////////////////////////////
+extern int permutation_counter;
 
 extern void crypto_aead_encrypt_xoodyak();
 extern void perm_xoodyak_asm(); 
@@ -90,35 +90,43 @@ void test_xoodyak_asm(void){
     init_buffer(npub, CRYPTO_NPUBBYTES);
     init_buffer(k, CRYPTO_KEYBYTES);
     
+    permutation_counter = 0;
     adlen = 16; mlen = 16;
     uint32_t num_cycle = __get_rv_cycle();
     crypto_aead_encrypt_xoodyak(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle1 = __get_rv_cycle();
     printf("AEAD output for adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle1 - num_cycle);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 
+    permutation_counter = 0;
     adlen = 32; mlen = 0;
     uint32_t num_cycle2 = __get_rv_cycle();
     crypto_aead_encrypt_xoodyak(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle3 = __get_rv_cycle();
     printf("AEAD output for adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle3 - num_cycle2);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 
+    permutation_counter = 0;
     adlen = 128; mlen = 128;
     uint32_t num_cycle4 = __get_rv_cycle();
     crypto_aead_encrypt_xoodyak(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle5 = __get_rv_cycle();
     printf("AEAD output for adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle5 - num_cycle4);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 
+    permutation_counter = 0;
     adlen = 0; mlen = 256;
     uint32_t num_cycle6 = __get_rv_cycle();
     crypto_aead_encrypt_xoodyak(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle7 = __get_rv_cycle();
     printf("AEAD output for adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle7 - num_cycle6);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 }   
@@ -142,36 +150,44 @@ void test_schwaemm_github(void)
     init_buffer(ad, MAX_AD_LEN);
     init_buffer(npub, SCHWAEMM_NONCE_BYTES);
     init_buffer(k, SCHWAEMM_KEY_BYTES);
-    
+
+    permutation_counter = 0;
     adlen = 16; mlen = 16;
     uint32_t num_cycle = __get_rv_cycle();
     schwaemm_256_128_github(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle1 = __get_rv_cycle();
     printf("AEAD output for schwaemm github adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle1 - num_cycle);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) SCHWAEMM_TAG_BYTES);
     
+    permutation_counter = 0;
     adlen = 32; mlen = 0;
     uint32_t num_cycle2 = __get_rv_cycle();
     schwaemm_256_128_github(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle3 = __get_rv_cycle();
     printf("AEAD output for schwaemm github adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle3 - num_cycle2);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) SCHWAEMM_TAG_BYTES);
 
+    permutation_counter = 0;
     adlen = 128; mlen = 128; 
     uint32_t num_cycle4 = __get_rv_cycle();
     schwaemm_256_128_github(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle5 = __get_rv_cycle();
     printf("AEAD output for schwaemm github adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle5 - num_cycle4);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) SCHWAEMM_TAG_BYTES);
 
+    permutation_counter = 0;
     adlen = 0; mlen = 256;
     uint32_t num_cycle6 = __get_rv_cycle();
     schwaemm_256_128_github(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle7 = __get_rv_cycle();
     printf("AEAD output for schwaemm github adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle7 - num_cycle6);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) SCHWAEMM_TAG_BYTES);
 }   
@@ -187,35 +203,43 @@ void test_ascon128_asm(void){
     init_buffer(npub, CRYPTO_NPUBBYTES);
     init_buffer(k, CRYPTO_KEYBYTES);
     
+    permutation_counter = 0;
     adlen = 16; mlen = 16;
     uint32_t num_cycle = __get_rv_cycle();
     github_ascon128_encrypt_asm(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle1 = __get_rv_cycle();
     printf("ascon128_asm Cycles = %d\n",num_cycle1 - num_cycle);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 
+    permutation_counter = 0;
     adlen = 32; mlen = 0;
     uint32_t num_cycle2 = __get_rv_cycle();
     github_ascon128_encrypt_asm(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle3 = __get_rv_cycle();
     printf("ascon128_asm Cycles = %d\n", num_cycle3 - num_cycle2);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 
+    permutation_counter = 0;
     adlen = 128; mlen = 128;
     uint32_t num_cycle4 = __get_rv_cycle();
     github_ascon128_encrypt_asm(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle5 = __get_rv_cycle();
     printf("ascon128_asm Cycles = %d\n", num_cycle5 - num_cycle4);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 
+    permutation_counter = 0;
     adlen = 0; mlen = 256;
     uint32_t num_cycle6 = __get_rv_cycle();
     github_ascon128_encrypt_asm(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle7 = __get_rv_cycle();
     printf("ascon128_asm Cycles = %d\n", num_cycle7 - num_cycle6);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
 }   
@@ -250,36 +274,46 @@ void test_tiny_asm(void){
     init_buffer(npub, TINY_CRYPTO_NPUBBYTES);
     init_buffer(k, TINY_CRYPTO_KEYBYTES);
     
+    permutation_counter = 0;
     adlen = 16; mlen = 16;
     uint32_t num_cycle = __get_rv_cycle();
     crypto_aead_encrypt_tiny_asm(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle1 = __get_rv_cycle();
     printf("tiny_asm Cycles = %d\n",num_cycle1 - num_cycle);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
     printf("--------------\n");
+
+    permutation_counter = 0;
     adlen = 32; mlen = 0;
     uint32_t num_cycle2 = __get_rv_cycle();
     crypto_aead_encrypt_tiny_asm(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle3 = __get_rv_cycle();
     printf("tiny_asm Cycles = %d\n", num_cycle3 - num_cycle2);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
     printf("--------------\n");
 
+    permutation_counter = 0;
     adlen = 128; mlen = 128;
     uint32_t num_cycle4 = __get_rv_cycle();
     crypto_aead_encrypt_tiny_asm(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle5 = __get_rv_cycle();
     printf("tiny_asm Cycles = %d\n", num_cycle5 - num_cycle4);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     //print_buffer(c, (size_t) mlen);
     //print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
     printf("--------------\n");
+    
+    permutation_counter = 0;
     adlen = 0; mlen = 256;
     uint32_t num_cycle6 = __get_rv_cycle();
     crypto_aead_encrypt_tiny_asm(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle7 = __get_rv_cycle();
     printf("tiny_asm Cycles = %d\n", num_cycle7 - num_cycle6);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     //print_buffer(c, (size_t) mlen);
     //print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
     printf("--------------\n");
@@ -295,37 +329,46 @@ void test_tiny(void){
     init_buffer(npub, TINY_CRYPTO_NPUBBYTES);
     init_buffer(k, TINY_CRYPTO_KEYBYTES);
     
+    permutation_counter = 0;
     adlen = 16; mlen = 16;
     uint32_t num_cycle = __get_rv_cycle();
     crypto_aead_encrypt_tiny(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle1 = __get_rv_cycle();
     printf("tiny Cycles = %d\n",num_cycle1 - num_cycle);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
     printf("--------------\n");
     
+    permutation_counter = 0;
     adlen = 32; mlen = 0;
     uint32_t num_cycle2 = __get_rv_cycle();
     crypto_aead_encrypt_tiny(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle3 = __get_rv_cycle();
     printf("tiny Cycles = %d\n", num_cycle3 - num_cycle2);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     print_buffer(c, (size_t) mlen);
     print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
     printf("--------------\n");
 
+    permutation_counter = 0;
     adlen = 128; mlen = 128;
     uint32_t num_cycle4 = __get_rv_cycle();
     crypto_aead_encrypt_tiny(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle5 = __get_rv_cycle();
     printf("tiny Cycles = %d\n", num_cycle5 - num_cycle4);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     //print_buffer(c, (size_t) mlen);
     //print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
     printf("--------------\n");
+
+    permutation_counter = 0;
     adlen = 0; mlen = 256;
     uint32_t num_cycle6 = __get_rv_cycle();
     crypto_aead_encrypt_tiny(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
     uint32_t num_cycle7 = __get_rv_cycle();
     printf("tiny Cycles = %d\n", num_cycle7 - num_cycle6);
+    printf("PERMUTATION COUNTER %d\n", permutation_counter);
     //print_buffer(c, (size_t) mlen);
     //print_buffer(c + mlen, (size_t) CRYPTO_ABYTES);
     printf("--------------\n");

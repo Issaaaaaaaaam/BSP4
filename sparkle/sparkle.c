@@ -23,7 +23,7 @@
 #include "sparkle.h"
 #include "internal-sparkle.h"
 #include <string.h>
-
+extern int permutation_counter; // we use this variable to count the number of usage of the permutation
 /**
  * \brief asm version of the permuation (LM + FC)
  */
@@ -159,6 +159,7 @@ static void schwaemm_256_128_authenticate
     while (adlen > SCHWAEMM_256_128_RATE) {
         schwaemm_256_128_rho(s);
         lw_xor_block((unsigned char *)s, ad, SCHWAEMM_256_128_RATE);
+        permutation_counter++;
         sparkle_384(s, 7);
         ad += SCHWAEMM_256_128_RATE;
         adlen -= SCHWAEMM_256_128_RATE;
@@ -174,6 +175,7 @@ static void schwaemm_256_128_authenticate
         lw_xor_block((unsigned char *)s, ad, temp);
         ((unsigned char *)s)[temp] ^= 0x80;
     }
+    permutation_counter++;
     sparkle_384(s, 11);
 }
 
@@ -195,6 +197,7 @@ int schwaemm_256_128_aead_encrypt
     /* Initialize the state with the nonce and the key */
     memcpy(SCHWAEMM_256_128_LEFT(s), npub, SCHWAEMM_256_128_NONCE_SIZE);
     memcpy(SCHWAEMM_256_128_RIGHT(s), k, SCHWAEMM_256_128_KEY_SIZE);
+    permutation_counter++;
     sparkle_384(s, 11);
 
     /* Process the associated data */
@@ -208,6 +211,7 @@ int schwaemm_256_128_aead_encrypt
                 (block, (unsigned char *)s, m, SCHWAEMM_256_128_RATE);
             schwaemm_256_128_rho(s);
             lw_xor_block((unsigned char *)s, m, SCHWAEMM_256_128_RATE);
+            permutation_counter++;
             sparkle_384(s, 7);
             memcpy(c, block, SCHWAEMM_256_128_RATE);
             c += SCHWAEMM_256_128_RATE;
@@ -230,6 +234,7 @@ int schwaemm_256_128_aead_encrypt
             ((unsigned char *)s)[temp] ^= 0x80;
             memcpy(c, block, temp);
         }
+        permutation_counter++;
         sparkle_384(s, 11);
         c += mlen;
     }
@@ -258,6 +263,7 @@ int schwaemm_256_128_aead_encrypt_opt_c
     /* Initialize the state with the nonce and the key */
     memcpy(SCHWAEMM_256_128_LEFT(s), npub, SCHWAEMM_256_128_NONCE_SIZE);
     memcpy(SCHWAEMM_256_128_RIGHT(s), k, SCHWAEMM_256_128_KEY_SIZE);
+    permutation_counter++;
     sparkle_384_opt_c_11(s);
 
     /* Process the associated data */
@@ -271,6 +277,7 @@ int schwaemm_256_128_aead_encrypt_opt_c
                 (block, (unsigned char *)s, m, SCHWAEMM_256_128_RATE);
             schwaemm_256_128_rho(s);
             lw_xor_block((unsigned char *)s, m, SCHWAEMM_256_128_RATE);
+            permutation_counter++;
 	    sparkle_384_opt_c_7(s);
             memcpy(c, block, SCHWAEMM_256_128_RATE);
             c += SCHWAEMM_256_128_RATE;
@@ -293,6 +300,7 @@ int schwaemm_256_128_aead_encrypt_opt_c
             ((unsigned char *)s)[temp] ^= 0x80;
             memcpy(c, block, temp);
         }
+        permutation_counter++;
     	sparkle_384_opt_c_11(s);
         c += mlen;
     }
@@ -321,6 +329,7 @@ int schwaemm_256_128_aead_encrypt_asm
     /* Initialize the state with the nonce and the key */
     memcpy(SCHWAEMM_256_128_LEFT(s), npub, SCHWAEMM_256_128_NONCE_SIZE);
     memcpy(SCHWAEMM_256_128_RIGHT(s), k, SCHWAEMM_256_128_KEY_SIZE);
+    permutation_counter++;
     func_sparkle_asm(s, 11);
 
     /* Process the associated data */
@@ -334,6 +343,7 @@ int schwaemm_256_128_aead_encrypt_asm
                 (block, (unsigned char *)s, m, SCHWAEMM_256_128_RATE);
             schwaemm_256_128_rho(s);
             lw_xor_block((unsigned char *)s, m, SCHWAEMM_256_128_RATE);
+            permutation_counter++;
             func_sparkle_asm(s, 7);
             memcpy(c, block, SCHWAEMM_256_128_RATE);
             c += SCHWAEMM_256_128_RATE;
@@ -356,6 +366,7 @@ int schwaemm_256_128_aead_encrypt_asm
             ((unsigned char *)s)[temp] ^= 0x80;
             memcpy(c, block, temp);
         }
+        permutation_counter++;
         func_sparkle_asm(s, 11);
         c += mlen;
     }
@@ -1255,6 +1266,7 @@ int esch_256_hash_asm
     while (inlen > ESCH_256_RATE) {
         memcpy(block, in, ESCH_256_RATE);
         esch_256_m3(s, block, 0x00);
+        permutation_counter++;
         func_sparkle_asm(s, 7);
         in += ESCH_256_RATE;
         inlen -= ESCH_256_RATE;
@@ -1270,8 +1282,10 @@ int esch_256_hash_asm
                ESCH_256_RATE - temp - 1);
         esch_256_m3(s, block, 0x01);
     }
+    permutation_counter++;
     func_sparkle_asm(s, 11);
     memcpy(out, s, ESCH_256_RATE);
+    permutation_counter++;
     func_sparkle_asm(s, 7);
     memcpy(out + ESCH_256_RATE, s, ESCH_256_RATE);
     return 0;

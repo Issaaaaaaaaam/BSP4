@@ -33,7 +33,7 @@
 #include "schwaemm.h"
 #include "sparkle.h"
 
-
+extern int permutation_counter; // we use this variable to count the number of usage of the permutation
 ///////////////////////////////////////////////////////////////////////////////
 ////////// SPARKLE CONFIGURATIONS FOR THE FOUR INSTANCES OF SCHWAEMM //////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -398,6 +398,7 @@ void Initialize(uint32_t *state, const uint8_t *key, const uint8_t *nonce)
    // load key into the capacity-part of the sate
   memcpy((state + RATE_WORDS), key, SCHWAEMM_KEY_BYTES);
   // execute SPARKLE with big number of steps
+  permutation_counter++;
   sparkle(state, STATE_BRANS, STEPS_BIG);
 }
 
@@ -420,6 +421,7 @@ void ProcessAssocData(uint32_t *state, const uint8_t *in, size_t inlen)
     // combined Rho and rate-whitening operation
     rho_whi_aut(state, in, aligned);
     // execute SPARKLE with slim number of steps
+    permutation_counter++;
     sparkle(state, STATE_BRANS, STEPS_SLIM);
     inlen -= RATE_BYTES;
     in += RATE_BYTES;
@@ -432,6 +434,7 @@ void ProcessAssocData(uint32_t *state, const uint8_t *in, size_t inlen)
   // combined Rho and rate-whitening (incl. padding)
   rho_whi_aut_last(state, in, inlen);
   // execute SPARKLE with big number of steps
+  permutation_counter++;
   sparkle(state, STATE_BRANS, STEPS_BIG);
 }
 
@@ -457,6 +460,7 @@ void ProcessPlainText(uint32_t *state, uint8_t *out, const uint8_t *in, \
     // combined Rho and rate-whitening operation
     rho_whi_enc(state, out, in, aligned);
     // execute SPARKLE with slim number of steps
+    permutation_counter++;
     sparkle(state, STATE_BRANS, STEPS_SLIM);
     inlen -= RATE_BYTES;
     out += RATE_BYTES;
@@ -470,6 +474,7 @@ void ProcessPlainText(uint32_t *state, uint8_t *out, const uint8_t *in, \
   // combined Rho and rate-whitening (incl. padding)
   rho_whi_enc_last(state, out, in, inlen);
   // execute SPARKLE with big number of steps
+  permutation_counter++;
   sparkle(state, STATE_BRANS, STEPS_BIG);
 }
 
@@ -539,6 +544,7 @@ void ProcessCipherText(uint32_t *state, uint8_t *out, const uint8_t *in, \
     // combined Rho and rate-whitening operation
     rho_whi_dec(state, out, in, aligned);
     // execute SPARKLE with slim number of steps
+    permutation_counter++; 
     sparkle(state, STATE_BRANS, STEPS_SLIM);
     inlen -= RATE_BYTES;
     out += RATE_BYTES;
@@ -552,6 +558,7 @@ void ProcessCipherText(uint32_t *state, uint8_t *out, const uint8_t *in, \
   // combined Rho and rate-whitening (incl. padding)
   rho_whi_dec_last(state, out, in, inlen);
   // execute SPARKLE with big number of steps
+  permutation_counter++; 
   sparkle(state, STATE_BRANS, STEPS_BIG);
 }
 

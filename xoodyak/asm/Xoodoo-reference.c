@@ -18,7 +18,7 @@ http://creativecommons.org/publicdomain/zero/1.0/
 #include "Xoodoo.h"
 
 extern void func_xoodoo_asm(uint32_t *state);
-
+extern int permutation_counter; // we use this variable to count the number of usage of the permutation
 /* ---------------------------------------------------------------- */
 
 void Xoodoo_asm_StaticInitialize( void )
@@ -214,7 +214,7 @@ void Xoodoo_asm_Permute_Nrounds( void * state, uint32_t nr )
     // unsigned int    i;
 
     fromBytesToWords(a, (const unsigned char *)state);
-
+    permutation_counter++;
     func_xoodoo_asm(a);
     //Dump("Permutation", a, 0);
 

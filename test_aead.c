@@ -9,7 +9,7 @@
 typedef unsigned char UChar;
 typedef unsigned long long ULLInt;
 
-
+extern int permutation_counter;
 #define MAX_AD_LEN  256
 #define MAX_MSG_LEN 256
 
@@ -165,37 +165,44 @@ void test_schwaemm(void)
   init_buffer(npub, SCHWAEMM_NONCE_BYTES);
   init_buffer(k, SCHWAEMM_KEY_BYTES);
   
+  permutation_counter = 0;
   adlen = 16; mlen = 16;
   uint32_t num_cycle = __get_rv_cycle();
   crypto_aead_encrypt(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
   uint32_t num_cycle1 = __get_rv_cycle();
   printf("AEAD output for adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle1 - num_cycle);
+  printf("PERMUTATION COUNTER %d\n", permutation_counter);
   print_buffer(c, (size_t) mlen);
   print_buffer(c + mlen, (size_t) SCHWAEMM_TAG_BYTES);
-  
+
+
+  permutation_counter = 0; 
   adlen = 32; mlen = 0;
   uint32_t num_cycle2 = __get_rv_cycle();
   crypto_aead_encrypt(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
   uint32_t num_cycle3 = __get_rv_cycle();
   printf("AEAD output for adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle3 - num_cycle2);
+  printf("PERMUTATION COUNTER %d\n", permutation_counter);
   print_buffer(c, (size_t) mlen);
   print_buffer(c + mlen, (size_t) SCHWAEMM_TAG_BYTES);
 
-
+  permutation_counter = 0; 
   adlen = 128; mlen = 128; //!!!!!!! also do this for xoodyak 
   uint32_t num_cycle4 = __get_rv_cycle();
   crypto_aead_encrypt(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
   uint32_t num_cycle5 = __get_rv_cycle();
   printf("AEAD output for adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle5 - num_cycle4);
+  printf("PERMUTATION COUNTER %d\n", permutation_counter);
   print_buffer(c, (size_t) mlen);
   print_buffer(c + mlen, (size_t) SCHWAEMM_TAG_BYTES);
 
-
+  permutation_counter = 0; 
   adlen = 0; mlen = 256;
   uint32_t num_cycle6 = __get_rv_cycle();
   crypto_aead_encrypt(c, &clen, m, mlen, ad, adlen, NULL, npub, k);
   uint32_t num_cycle7 = __get_rv_cycle();
   printf("AEAD output for adlen = %i, mlen = %i:\n Cycles = %d\n", (int) adlen, (int) mlen, num_cycle7 - num_cycle6);
+  printf("PERMUTATION COUNTER %d\n", permutation_counter);
   print_buffer(c, (size_t) mlen);
   print_buffer(c + mlen, (size_t) SCHWAEMM_TAG_BYTES);
 }

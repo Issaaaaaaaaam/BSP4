@@ -9,7 +9,7 @@
 #define NROUND2 128*8
 
 extern void tiny_rv32(unsigned int *state, const unsigned char *key, unsigned int number_of_steps);
-
+extern int permutation_counter; // we use this variable to count the number of usage of the permutation
 
 
 // The initialization  
@@ -21,13 +21,15 @@ void static initialization(const unsigned char *key, const unsigned char *iv, un
         //initialize the state as 0  
         for (i = 0; i < 4; i++) state[i] = 0;     
 
-        //update the state with the key  
+        //update the state with the key 
+        permutation_counter++; 
         tiny_rv32(state, key, NROUND2);  
 
         //introduce IV into the state  
         for (i = 0;  i < 3; i++)  
         {
-                state[1] ^= FrameBitsIV;   
+                state[1] ^= FrameBitsIV;
+                permutation_counter++;   
                 tiny_rv32(state, key, NROUND1); 
                 state[3] ^= ((unsigned int*)iv)[i]; 
         }   
@@ -42,6 +44,7 @@ void static process_ad(const unsigned char *k, const unsigned char *ad, unsigned
         for (i = 0; i < (adlen >> 2); i++)
         {
                 state[1] ^= FrameBitsAD;
+                permutation_counter++;
                 tiny_rv32(state, k, NROUND1);
                 state[3] ^= ((unsigned int*)ad)[i];
         }
@@ -50,6 +53,7 @@ void static process_ad(const unsigned char *k, const unsigned char *ad, unsigned
         if ((adlen & 3) > 0)
         {
                 state[1] ^= FrameBitsAD;
+                permutation_counter++;
                 tiny_rv32(state, k, NROUND1);
                 for (j = 0; j < (adlen & 3); j++)  ((unsigned char*)state)[12 + j] ^= ad[(i << 2) + j];
                 state[1] ^= adlen & 3;
@@ -82,6 +86,7 @@ int encrypt_tiny_asm(
         for (i = 0; i < (mlen >> 2); i++)
         {
                 state[1] ^= FrameBitsPC;
+                permutation_counter++;
                 tiny_rv32(state, k, NROUND2);
                 state[3] ^= ((unsigned int*)m)[i];
                 ((unsigned int*)c)[i] = state[2] ^ ((unsigned int*)m)[i];
@@ -90,6 +95,7 @@ int encrypt_tiny_asm(
         if ((mlen & 3) > 0)
         {
                 state[1] ^= FrameBitsPC;
+                permutation_counter++;
                 tiny_rv32(state, k, NROUND2);
                 for (j = 0; j < (mlen & 3); j++)
                 {
@@ -101,10 +107,12 @@ int encrypt_tiny_asm(
 
         //finalization stage, we assume that the tag length is 8 bytes
         state[1] ^= FrameBitsFinalization;
+        permutation_counter++;
         tiny_rv32(state, k, NROUND2);
         ((unsigned int*)mac)[0] = state[2];
 
         state[1] ^= FrameBitsFinalization;
+        permutation_counter++;
         tiny_rv32(state, k, NROUND1);
         ((unsigned int*)mac)[1] = state[2];
 

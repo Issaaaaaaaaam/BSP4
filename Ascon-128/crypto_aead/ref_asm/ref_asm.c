@@ -13,6 +13,8 @@
 #define P8(s) (ascon_asm((s), 0xb4))
 #define P6(s) (ascon_asm((s), 0x96))
 
+extern int permutation_counter; // we use this variable to count the number of usage of the permutation
+
 int crypto_aead_encrypt_ref_asm(unsigned char *c, unsigned long long *clen,
                                 const unsigned char *m, unsigned long long mlen,
                                 const unsigned char *ad,
@@ -36,6 +38,7 @@ int crypto_aead_encrypt_ref_asm(unsigned char *c, unsigned long long *clen,
     s.x2 = K1;
     s.x3 = N0;
     s.x4 = N1;
+    permutation_counter++;
     P12(&s);
     s.x3 ^= K0;
     s.x4 ^= K1;
@@ -44,12 +47,14 @@ int crypto_aead_encrypt_ref_asm(unsigned char *c, unsigned long long *clen,
     if (adlen) {
         while (adlen >= RATE) {
             s.x0 ^= BYTES_TO_U64(ad, 8);
+            permutation_counter++;
             P6(&s);
             adlen -= RATE;
             ad += RATE;
         }
         s.x0 ^= BYTES_TO_U64(ad, adlen);
         s.x0 ^= 0x80ull << (56 - 8 * adlen);
+        permutation_counter++;
         P6(&s);
     }
     s.x4 ^= 1;
@@ -58,6 +63,7 @@ int crypto_aead_encrypt_ref_asm(unsigned char *c, unsigned long long *clen,
     while (mlen >= RATE) {
         s.x0 ^= BYTES_TO_U64(m, 8);
         U64_TO_BYTES(c, s.x0, 8);
+        permutation_counter++;
         P6(&s);
         mlen -= RATE;
         m += RATE;
@@ -71,6 +77,7 @@ int crypto_aead_encrypt_ref_asm(unsigned char *c, unsigned long long *clen,
     // finalization
     s.x1 ^= K0;
     s.x2 ^= K1;
+    permutation_counter++;
     P12(&s);
     s.x3 ^= K0;
     s.x4 ^= K1;
